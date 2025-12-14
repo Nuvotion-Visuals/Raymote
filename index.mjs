@@ -308,6 +308,41 @@ const server = http.createServer(async (req, res) => {
     }
   }
   
+  // API: Rename a button
+  else if (url.pathname.startsWith('/api/buttons/') && req.method === 'PATCH') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const id = url.pathname.split('/')[3];
+        const { name } = JSON.parse(body);
+        
+        if (!name || name.trim() === '') {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Name is required' }));
+          return;
+        }
+        
+        let buttons = loadButtons();
+        const button = buttons.find(b => b.id === id);
+        
+        if (!button) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Button not found' }));
+          return;
+        }
+        
+        button.name = name.trim();
+        saveButtons(buttons);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(buttons));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+  }
+  
   // API: Send IR command
   else if (url.pathname === '/api/send' && req.method === 'POST') {
     let body = '';

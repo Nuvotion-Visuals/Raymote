@@ -33,13 +33,17 @@ This project was specifically built to work with these Arduino-based USB serial 
   - Decodes IR signals from any remote control
   - Shows up as a virtual COM port (no special drivers needed)
   - Uses 9600 baud rate
+  - Includes Mini USB cable
 
 - **[Arduino USB IR Transmitter](https://ezmation.com/infrared/6-46-arduino-based-usb-ir-transmitter.html#/14-additional_cable-none)** - $21.95
   - Transmits IR codes via USB serial commands
   - Supports multiple IR protocols (NEC, Sony, RC5, etc.)
   - Uses 9600 baud rate
+  - Includes Mini USB cable
 
-**Total estimated cost: ~$44** (plus optional USB cables if devices don't include them)
+**Total estimated cost: ~$44**
+
+**⚠️ Important:** Make sure you use USB cables that support **data transfer**, not just charging/power-only cables. If the devices aren't recognized by your computer, try a different USB cable - many cheap cables only have power wires and lack the data pins needed for serial communication.
 
 ## Installation
 

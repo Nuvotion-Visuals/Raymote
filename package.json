@@ -1,0 +1,17 @@
+{
+  "name": "raymote",
+  "version": "1.0.0",
+  "description": "IR remote control application",
+  "type": "module",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "keywords": ["ir", "remote", "serial"],
+  "author": "Tom",
+  "license": "MIT",
+  "dependencies": {
+    "serialport": "^12.0.0"
+  }
+}
+

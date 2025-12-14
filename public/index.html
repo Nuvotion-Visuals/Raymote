@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raymote</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #000;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+    
+    h2 { margin: 30px 0 15px 0; font-size: 18px; font-weight: 400; }
+    
+    .mode-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+    }
+    
+    .mode-toggle button {
+      width: auto;
+      padding: 8px 16px;
+      margin: 0;
+    }
+    
+    .card {
+      background: #000;
+      border: 2px solid #333;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .port-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    
+    select, input, button {
+      width: 100%;
+      padding: 10px;
+      background: #000;
+      border: 2px solid #333;
+      color: #e0e0e0;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    
+    button {
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+    
+    button:hover { border-color: #666; }
+    
+    .btn {
+      background: #000;
+      border: 2px solid #333;
+      padding: 20px;
+      text-align: left;
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .btn:hover { border-color: #666; }
+    
+    .btn.btn-success {
+      border-color: #00ff00 !important;
+      color: #00ff00 !important;
+    }
+    
+    .btn.btn-error {
+      border-color: #ff0000 !important;
+      color: #ff0000 !important;
+    }
+    
+    .btn.btn-success .btn-name,
+    .btn.btn-success .btn-code {
+      color: #00ff00;
+    }
+    
+    .btn.btn-error .btn-name,
+    .btn.btn-error .btn-code {
+      color: #ff0000;
+    }
+    
+    .btn-name { font-size: 14px; font-weight: 500; margin-bottom: 5px; }
+    .btn-code { font-size: 11px; color: #666; font-family: monospace; }
+    
+    .del {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      font-size: 16px;
+      line-height: 18px;
+      text-align: center;
+    }
+    
+    .log {
+      background: #000;
+      border: 2px solid #333;
+      border-radius: 4px;
+      padding: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    
+    .log-entry {
+      padding: 5px;
+      cursor: pointer;
+      border-bottom: 2px solid #1a1a1a;
+    }
+    
+    .log-entry:hover { background: #1a1a1a; }
+    
+    .row { display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 10px; }
+    
+    .status {
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      border: 2px solid transparent;
+    }
+    
+    .status.success { background: #001a00; border-color: #003300; color: #00ff00; }
+    .status.error { background: #1a0000; border-color: #330000; color: #ff0000; }
+    
+    .empty { text-align: center; padding: 40px; color: #333; }
+    
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="mode-toggle">
+    <button onclick="toggleMode()">Mode: <span id="mode-label">Remote</span></button>
+  </div>
+  
+  <div id="status" class="status"></div>
+  
+  <div id="config-view" class="hidden">
+    <h2>Ports</h2>
+    <div class="port-grid">
+      <div class="card">
+        <label>Receiver</label>
+        <select id="rx-port"></select>
+        <button onclick="connect('receiver')">Connect</button>
+      </div>
+      <div class="card">
+        <label>Transmitter</label>
+        <select id="tx-port"></select>
+        <button onclick="connect('transmitter')">Connect</button>
+      </div>
+    </div>
+    
+    <h2>Create Button</h2>
+    <div class="card">
+      <input type="text" id="name" placeholder="Button name">
+      <div class="row">
+        <select id="protocol">
+          <option>NEC</option>
+          <option>SONY</option>
+          <option>RC5</option>
+          <option>RC6</option>
+          <option>PANASONIC_OLD</option>
+          <option>JVC</option>
+          <option>NECX</option>
+          <option>SAMSUNG36</option>
+        </select>
+        <input type="text" id="bits" value="32" placeholder="Bits">
+        <input type="text" id="code" placeholder="0x20DF23DC">
+      </div>
+      <button onclick="create()">Create</button>
+    </div>
+    
+    <h2>Log</h2>
+    <div id="log" class="log">
+      <div class="empty">No commands received</div>
+    </div>
+    
+    <h2>Buttons</h2>
+    <div id="buttons-config" class="grid">
+      <div class="empty">No buttons</div>
+    </div>
+  </div>
+  
+  <div id="remote-view">
+    <div id="buttons" class="grid">
+      <div class="empty">No buttons</div>
+    </div>
+  </div>
+
+  <script>
+    let es = null;
+    let currentMode = 'remote';
+    
+    function toggleMode() {
+      currentMode = currentMode === 'remote' ? 'config' : 'remote';
+      document.getElementById('mode-label').textContent = currentMode === 'remote' ? 'Remote' : 'Config';
+      document.getElementById('config-view').className = currentMode === 'config' ? '' : 'hidden';
+      document.getElementById('remote-view').className = currentMode === 'remote' ? '' : 'hidden';
+    }
+    
+    async function loadPorts() {
+      const res = await fetch('/api/ports');
+      const ports = await res.json();
+      const opts = '<option value="">Disconnect</option>' + ports.map(p => `<option value="${p.path}">${p.path}</option>`).join('');
+      document.getElementById('rx-port').innerHTML = opts;
+      document.getElementById('tx-port').innerHTML = opts;
+      
+      // Load saved config and select saved ports
+      const config = await fetch('/api/config').then(r => r.json());
+      if (config.receiverPort) {
+        document.getElementById('rx-port').value = config.receiverPort;
+      }
+      if (config.transmitterPort) {
+        document.getElementById('tx-port').value = config.transmitterPort;
+      }
+    }
+    
+    async function loadButtons() {
+      const res = await fetch('/api/buttons');
+      const btns = await res.json();
+      
+      const renderButtons = (container, showDelete) => {
+        if (btns.length === 0) {
+          container.innerHTML = '<div class="empty">No buttons</div>';
+          return;
+        }
+        
+        container.innerHTML = btns.map(b => `
+          <button class="btn" onclick="send(event, '${b.protocol}','${b.bits}','${b.code}','${b.name}')">
+            ${showDelete ? `<span class="del" onclick="event.stopPropagation();del('${b.id}')">×</span>` : ''}
+            <div class="btn-name">${b.name}</div>
+            <div class="btn-code">${b.code}</div>
+          </button>
+        `).join('');
+      };
+      
+      renderButtons(document.getElementById('buttons'), false); // Remote mode - no delete
+      renderButtons(document.getElementById('buttons-config'), true); // Config mode - with delete
+    }
+    
+    async function connect(type) {
+      const port = document.getElementById(type === 'receiver' ? 'rx-port' : 'tx-port').value;
+      
+      try {
+        const res = await fetch('/api/connect', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({port, type})
+        });
+        
+        const result = await res.json();
+        
+        if (res.ok) {
+          if (result.disconnected) {
+            msg(`${type} disconnected`, 'success');
+          } else {
+            msg(`${type} connected`, 'success');
+          }
+        } else {
+          msg(`${type} connection failed: ${result.error}`, 'error');
+        }
+      } catch (err) {
+        msg(`Error connecting ${type}: ${err.message}`, 'error');
+      }
+    }
+    
+    async function create() {
+      const name = document.getElementById('name').value.trim();
+      const protocol = document.getElementById('protocol').value;
+      const bits = document.getElementById('bits').value;
+      const code = document.getElementById('code').value.trim();
+      
+      if (!name || !code) return msg('Name and code required', 'error');
+      
+      await fetch('/api/buttons', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name, protocol, bits, code})
+      });
+      
+      document.getElementById('name').value = '';
+      document.getElementById('code').value = '';
+      msg('Button created', 'success');
+      loadButtons();
+    }
+    
+    async function del(id) {
+      await fetch(`/api/buttons/${id}`, {method: 'DELETE'});
+      loadButtons();
+    }
+    
+    async function send(event, protocol, bits, code, name) {
+      const btn = event.currentTarget;
+      
+      const res = await fetch('/api/send', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({protocol, bits, code})
+      });
+      
+      if (res.ok) {
+        msg(`Sent: ${name}`, 'success');
+        btn.classList.add('btn-success');
+        setTimeout(() => btn.classList.remove('btn-success'), 2000);
+      } else {
+        msg('Send failed', 'error');
+        btn.classList.add('btn-error');
+        setTimeout(() => btn.classList.remove('btn-error'), 2000);
+      }
+    }
+    
+    function startStream() {
+      if (es) es.close();
+      es = new EventSource('/api/events');
+      es.onmessage = e => {
+        const {timestamp, data} = JSON.parse(e.data);
+        addLog(timestamp, data);
+      };
+    }
+    
+    function addLog(time, data) {
+      const log = document.getElementById('log');
+      if (log.querySelector('.empty')) log.innerHTML = '';
+      
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      div.textContent = `[${time}] ${data}`;
+      div.onclick = () => parseLog(data);
+      
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }
+    
+    function parseLog(data) {
+      const m = data.match(/Decoded\s+(\w+)\(\d+\):\s+Value:([0-9A-Fa-f]+).*\((\d+)\s+bits\)/);
+      if (m) {
+        document.getElementById('protocol').value = m[1].toUpperCase();
+        document.getElementById('bits').value = m[3];
+        document.getElementById('code').value = '0x' + m[2];
+        document.getElementById('name').focus();
+        msg('Code captured', 'success');
+      }
+    }
+    
+    function msg(text, type) {
+      const s = document.getElementById('status');
+      s.textContent = text;
+      s.className = `status ${type}`;
+      if (type === 'success') setTimeout(() => { s.textContent = ''; s.className = 'status'; }, 2000);
+    }
+    
+    loadPorts();
+    loadButtons();
+    startStream(); // Start listening for IR events
+  </script>
+</body>
+</html>

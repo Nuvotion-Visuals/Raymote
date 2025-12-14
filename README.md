@@ -1,6 +1,6 @@
 # Raymote - IR Remote Control
 
-A minimal web-based IR remote control application for Linux. Capture IR commands from any remote and create custom buttons to control your devices.
+A minimal web-based IR remote control application for Mac/Windows/Linux. Capture IR commands from any remote and create custom buttons to control your devices.
 
 ### Button UI
 
@@ -23,7 +23,23 @@ A minimal web-based IR remote control application for Linux. Capture IR commands
 
 - Node.js 20+
 - USB IR receiver and transmitter devices (compatible with serial/UART communication)
-- Linux (tested on Ubuntu)
+- Linux (tested), macOS, or Windows
+
+## Hardware
+
+This project was specifically built to work with these Arduino-based USB serial IR devices:
+
+- **[Arduino Based USB IR Receiver](https://ezmation.com/infrared/1-arduino-based-usb-ir-receiver.html)** - $21.95
+  - Decodes IR signals from any remote control
+  - Shows up as a virtual COM port (no special drivers needed)
+  - Uses 9600 baud rate
+
+- **[Arduino USB IR Transmitter](https://ezmation.com/infrared/6-46-arduino-based-usb-ir-transmitter.html#/14-additional_cable-none)** - $21.95
+  - Transmits IR codes via USB serial commands
+  - Supports multiple IR protocols (NEC, Sony, RC5, etc.)
+  - Uses 9600 baud rate
+
+**Total estimated cost: ~$44** (plus optional USB cables if devices don't include them)
 
 ## Installation
 
@@ -33,21 +49,29 @@ A minimal web-based IR remote control application for Linux. Capture IR commands
    npm install
    ```
 
-3. Add your user to the dialout group (optional, to avoid using sudo):
+3. Add your user to the dialout group (Linux only, optional to avoid using sudo):
    ```bash
    sudo usermod -a -G dialout $USER
    ```
    Then log out and back in for the change to take effect.
+   
+   On Windows and macOS, no additional permissions are typically needed.
 
 ## Usage
 
 ### Start the server
 
+**Linux:**
 ```bash
 sudo node index.mjs
 ```
 
 Or without sudo if you're in the dialout group:
+```bash
+node index.mjs
+```
+
+**Windows/macOS:**
 ```bash
 node index.mjs
 ```
@@ -102,8 +126,8 @@ Open your browser to `http://localhost:3000`
 - Try unplugging and replugging the devices
 
 ### Permission denied on serial ports
-- Run with `sudo`, or
-- Add your user to the dialout group (see Installation)
+- **Linux:** Run with `sudo`, or add your user to the dialout group (see Installation)
+- **Windows/macOS:** This shouldn't occur; check device drivers are installed
 
 ### IR commands not appearing in log
 - Verify the receiver is connected to the correct port

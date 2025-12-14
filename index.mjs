@@ -1,5 +1,6 @@
 import http from 'http';
 import fs from 'fs';
+import os from 'os';
 import { SerialPort } from 'serialport';
 import { ReadlineParser } from '@serialport/parser-readline';
 
@@ -54,11 +55,23 @@ function saveConfig(config) {
 // List available serial ports (filter to only USB devices)
 async function listPorts() {
   const ports = await SerialPort.list();
+  const platform = os.platform();
   
-  // Filter to only show USB serial devices (ttyUSB*, ttyACM*)
-  // Exclude built-in serial ports (ttyS*)
+  // Filter based on platform to show only USB serial devices
   const filteredPorts = ports.filter(port => {
-    return port.path.includes('ttyUSB') || port.path.includes('ttyACM');
+    if (platform === 'linux') {
+      // Linux: ttyUSB*, ttyACM* (exclude built-in ttyS*)
+      return port.path.includes('ttyUSB') || port.path.includes('ttyACM');
+    } else if (platform === 'win32') {
+      // Windows: COM ports
+      return port.path.startsWith('COM');
+    } else if (platform === 'darwin') {
+      // macOS: USB serial devices (exclude Bluetooth)
+      return (port.path.includes('/dev/cu.') || port.path.includes('/dev/tty.')) && 
+             port.path.includes('usb');
+    }
+    // Default: show all ports on unknown platforms
+    return true;
   });
   
   return filteredPorts.map(port => ({

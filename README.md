@@ -85,6 +85,41 @@ The server will:
 - Automatically reconnect to previously configured ports
 - Load your saved buttons
 
+### Auto-start on boot with PM2 (Linux)
+
+To keep Raymote running and auto-start on system boot, use PM2:
+
+1. **Install PM2 globally:**
+   ```bash
+   sudo npm install -g pm2
+   ```
+
+2. **Start Raymote with PM2:**
+   ```bash
+   pm2 start index.mjs --name raymote
+   ```
+
+3. **Save the PM2 process list:**
+   ```bash
+   pm2 save
+   ```
+
+4. **Set up PM2 to start on boot:**
+   ```bash
+   pm2 startup
+   ```
+   Copy and run the command it outputs (it will look like):
+   ```bash
+   sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u YOUR_USERNAME --hp /home/YOUR_USERNAME
+   ```
+
+**Useful PM2 commands:**
+- `pm2 list` - View running processes
+- `pm2 logs raymote` - View application logs
+- `pm2 restart raymote` - Restart the app
+- `pm2 stop raymote` - Stop the app
+- `pm2 delete raymote` - Remove from PM2
+
 ### Web Interface
 
 Open your browser to `http://localhost:3000`

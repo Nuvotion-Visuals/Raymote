@@ -8,8 +8,7 @@ A minimal web-based IR remote control application for Linux. Capture IR commands
 
 ### Config UI
 
-<img width="1122" height="1246" alt="image" src="https://github.com/user-attachments/assets/98048763-b3be-4e71-a8a5-f1a795eaf7ba" />
-
+<img width="752" height="1241" alt="image" src="https://github.com/user-attachments/assets/83620688-b727-4b87-ae1b-f6c465127435" />
 
 ## Features
 

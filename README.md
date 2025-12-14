@@ -2,6 +2,15 @@
 
 A minimal web-based IR remote control application for Linux. Capture IR commands from any remote and create custom buttons to control your devices.
 
+### Button UI
+
+<img width="748" height="291" alt="image" src="https://github.com/user-attachments/assets/b3162957-7585-4894-b4cc-a45b5df33afe" />
+
+### Config UI
+
+<img width="1122" height="1246" alt="image" src="https://github.com/user-attachments/assets/98048763-b3be-4e71-a8a5-f1a795eaf7ba" />
+
+
 ## Features
 
 - 📡 Capture IR commands from any remote control
